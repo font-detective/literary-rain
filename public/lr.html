@@ -1,0 +1,92 @@
+<html>
+	<!-- 
+		Created by Luke Mitchell
+		https://github.com/lukem512
+		December 2015
+	-->
+	<head>
+		<title>Literary Rain</title>
+
+		<!-- Configuration -->
+		<script>
+			// URL of web font to use
+			// See https://www.google.com/fonts for a list
+			var fontUrl = 'https://fonts.googleapis.com/css?family=Open+Sans';
+
+			// Number of words to write
+			// This is currently random, between the bounds
+			var minSentenceLength = 1;
+			var maxSentenceLength = 5;
+			var sentenceLength = Math.floor(Math.random() * maxSentenceLength) + minSentenceLength;
+		</script>
+
+		<script>
+			// Majid Laissi
+			// http://stackoverflow.com/questions/14446447/javascript-read-local-text-file
+			function readTextFile(file, callback) {
+			    var rawFile = new XMLHttpRequest();
+			    rawFile.open("GET", file, true);
+			    rawFile.onreadystatechange = function () {
+			        if(rawFile.readyState === 4) {
+			            if(rawFile.status === 200 || rawFile.status == 0) {
+			                var allText = rawFile.responseText;
+			                callback(allText.split(/\s+/));
+			            }
+			        }
+			    }
+			    rawFile.send(null);
+			}
+		</script>
+
+		<!-- Vendor scripts -->
+		<script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+	</head>
+
+	<body>
+		<p>Want many, many images containing text in a particular font? Want it on a range of in-vogue backgrounds? This is a the script for you!</p>
+		<canvas id="lrCanvas">You'll need a browser capable of supporting <a href="http://www.w3schools.com/html/html5_canvas.asp">canvas</a></canvas>
+		<script>
+			var canvas = document.getElementById('lrCanvas');
+			var ctx = canvas.getContext('2d');
+
+			var link = document.createElement('link');
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = fontUrl;
+			document.getElementsByTagName('head')[0].appendChild(link);
+
+			// Trick from http://stackoverflow.com/questions/2635814/
+			var image = new Image;
+			image.src = link.href;
+			image.onerror = function() {
+				readTextFile("words.txt", function(words) {
+					// Pick some words
+					var text = "";
+					for (i = 0; i < sentenceLength; i++) {
+						var index = Math.floor(Math.random() * words.length);
+						text = words[index] + " ";
+					}
+
+					// Draw to canvas
+					ctx.font = '10px "Open Sans"';
+				    ctx.textBaseline = 'top';
+				    ctx.fillText(text, 10, 10);
+
+				    // Save image
+				    var dataURL = canvas.toDataURL();
+
+				    // Post to server
+				    $.ajax({
+						type: "POST",
+						url: "script.php",
+						data: { 
+							imgBase64: dataURL
+						}
+					}).done(function(o) {
+						console.log('saved'); 
+					});
+				});
+			};
+		</script>
+	</body>
+</html>
