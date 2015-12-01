@@ -51,6 +51,7 @@
 		</script>
 
 		<!-- Vendor scripts -->
+		<script src="./mxmroof.js"></script>
 		<script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
 	</head>
 
@@ -114,6 +115,9 @@
 							}
 							fontString = weight + fontString;
 						}
+
+						// Set colour
+						console.log(getAverageColourAsRGB(img));
 
 						console.log('Using font: ' + fontString);
 

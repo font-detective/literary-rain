@@ -23,8 +23,8 @@ var app = express();
 
 app.use(express.static(__dirname + '/public'));
 
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false, limit: '50mb'}));
+app.use(bodyParser.json({limit: '50mb'}));
 
 app.post('/upload', function (req, res) {
 	var base64Data = req.body.imgBase64.replace(/^data:image\/png;base64,/, "");
