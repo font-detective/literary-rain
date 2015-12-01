@@ -11,6 +11,7 @@
 		<script>
 			// URL of web font to use
 			// See https://www.google.com/fonts for a list
+			var fontName = 'Open Sans'
 			var fontUrl = 'https://fonts.googleapis.com/css?family=Open+Sans';
 
 			// Number of words to write
@@ -44,7 +45,7 @@
 
 	<body>
 		<p>Want many, many images containing text in a particular font? Want it on a range of in-vogue backgrounds? This is a the script for you!</p>
-		<canvas id="lrCanvas">You'll need a browser capable of supporting <a href="http://www.w3schools.com/html/html5_canvas.asp">canvas</a></canvas>
+		<canvas id="lrCanvas">You'll need a browser capable of supporting <a href="http://www.w3schools.com/html/html5_canvas.asp">canvas</a>.</canvas>
 		<script>
 			var canvas = document.getElementById('lrCanvas');
 			var ctx = canvas.getContext('2d');
@@ -64,13 +65,20 @@
 					var text = "";
 					for (i = 0; i < sentenceLength; i++) {
 						var index = Math.floor(Math.random() * words.length);
-						text = words[index] + " ";
+						text = text + words[index] + " ";
 					}
 
 					// Draw to canvas
-					ctx.font = '10px "Open Sans"';
+					// Resizing if necessary
+					ctx.font = '10px "' + fontName + '"';
 				    ctx.textBaseline = 'top';
-				    ctx.fillText(text, 10, 10);
+
+				    var width = ctx.measureText(text).width;
+					if(width > 100) {
+						canvas.width = width + (0.05 * width);
+					}
+
+					ctx.fillText(text, 0, 100);
 
 				    // Save image
 				    var dataURL = canvas.toDataURL();
@@ -78,12 +86,12 @@
 				    // Post to server
 				    $.ajax({
 						type: "POST",
-						url: "script.php",
+						url: "script.php", // TODO
 						data: { 
 							imgBase64: dataURL
 						}
 					}).done(function(o) {
-						console.log('saved'); 
+						// Success! 
 					});
 				});
 			};
