@@ -133,8 +133,12 @@
 							ctx.font = fontString;
 						}
 
+						// Vary location
+						var x = Math.floor(Math.random() * (canvas.width - img.width));
+						var y = Math.floor(Math.random() * (canvas.height - img.height));;
+
 						// Do it already!
-						ctx.drawImage(img, 0, 0);
+						ctx.drawImage(img, x, y);
 						ctx.fillText(text, 0, 100);
 
 					    // Save image
