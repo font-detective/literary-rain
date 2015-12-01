@@ -67,82 +67,94 @@
 			link.href = fontUrl;
 			document.getElementsByTagName('head')[0].appendChild(link);
 
-			// Trick from http://stackoverflow.com/questions/2635814/
-			var image = new Image;
-			image.src = link.href;
-			image.onerror = function() {
-				readTextFile("words.txt", function(words) {
-					// Pick some words
-					var text = "";
-					for (i = 0; i < sentenceLength; i++) {
-						var index = Math.floor(Math.random() * words.length);
-						text = text + words[index] + " ";
-					}
-
-					// Construct font style string
-					var fontString = fontSize + 'px "' + fontName + '"';
-
-					if (useStyles) {
-						// 5x more likely to be normal
-						var styles = ['italic', 'oblique', '', '', '', '', ''];
-						var style = styles[Math.floor(Math.random() * styles.length)];
-						if (style != '') {
-							style = style + ' ';
+			// Wait for background image to load...
+			var img = new Image();
+			img.onload = function() {
+				// Trick from http://stackoverflow.com/questions/2635814/
+				var image = new Image;
+				image.src = link.href;
+				image.onerror = function() {
+					readTextFile("words.txt", function(words) {
+						// Pick some words
+						var text = "";
+						for (i = 0; i < sentenceLength; i++) {
+							var index = Math.floor(Math.random() * words.length);
+							text = text + words[index] + " ";
 						}
-						fontString = style + fontString;
-					}
 
-					if (useVariants) {
-						// 5x more likely to be normal
-						var variants = ['small-caps', '', '', '', '', ''];
-						var variant = variants[Math.floor(Math.random() * variants.length)];
-						if (variant != '') {
-							variant = variant + ' ';
+						// Construct font style string
+						var fontString = fontSize + 'px "' + fontName + '"';
+
+						if (useStyles) {
+							// 5x more likely to be normal
+							var styles = ['italic', 'oblique', '', '', '', '', ''];
+							var style = styles[Math.floor(Math.random() * styles.length)];
+							if (style != '') {
+								style = style + ' ';
+							}
+							fontString = style + fontString;
 						}
-						fontString = variant + fontString;
-					}
 
-					if (useWeights) {
-						// 5x more likely to be normal
-						var weights = ['lighter', 'light', 'bold', 'bolder', '', '', '', '', ''];
-						var weight = weights[Math.floor(Math.random() * weights.length)];
-						if (weight != '') {
-							weight = weight + ' ';
+						if (useVariants) {
+							// 5x more likely to be normal
+							var variants = ['small-caps', '', '', '', '', ''];
+							var variant = variants[Math.floor(Math.random() * variants.length)];
+							if (variant != '') {
+								variant = variant + ' ';
+							}
+							fontString = variant + fontString;
 						}
-						fontString = weight + fontString;
-					}
 
-					console.log('Using font: ' + fontString);
-
-					// Draw to canvas
-					// Resizing if necessary
-					ctx.font = fontString;
-				    ctx.textBaseline = 'top';
-
-				    var width = ctx.measureText(text).width;
-					if(width > 100) {
-						canvas.width = width;
-					}
-
-					// This has to be set again after measureText
-					ctx.font = fontString;
-					ctx.fillText(text, 0, 100);
-
-				    // Save image
-				    var dataURL = canvas.toDataURL();
-
-				    // Post to server
-				    $.ajax({
-						type: "POST",
-						url: "/upload",
-						data: { 
-							imgBase64: dataURL
+						if (useWeights) {
+							// 5x more likely to be normal
+							var weights = ['lighter', 'light', 'bold', 'bolder', '', '', '', '', ''];
+							var weight = weights[Math.floor(Math.random() * weights.length)];
+							if (weight != '') {
+								weight = weight + ' ';
+							}
+							fontString = weight + fontString;
 						}
-					}).done(function(o) {
-						// Success! 
+
+						console.log('Using font: ' + fontString);
+
+						// Draw to canvas
+						// Resizing if necessary
+						ctx.font = fontString;
+					    ctx.textBaseline = 'top';
+
+					    var width = ctx.measureText(text).width;
+						if(width > 100) {
+							canvas.width = width;
+							// This has to be set again after resize
+							ctx.font = fontString;
+						}
+
+						// Do it already!
+						ctx.drawImage(img, 0, 0);
+						ctx.fillText(text, 0, 100);
+
+					    // Save image
+					    var dataURL = canvas.toDataURL();
+
+					    // Post to server
+					    $.ajax({
+							type: "POST",
+							url: "/upload",
+							data: { 
+								imgBase64: dataURL
+							}
+						}).done(function(o) {
+							// Success! 
+						});
 					});
-				});
+				};
 			};
+
+			// Set the background image source
+			readTextFile("images.txt", function(images) {
+				var index = Math.floor(Math.random() * images.length);
+				img.src = images[index];
+			});
 		</script>
 	</body>
 </html>
