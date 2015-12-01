@@ -14,11 +14,22 @@
 			var fontName = 'Open Sans'
 			var fontUrl = 'https://fonts.googleapis.com/css?family=Open+Sans';
 
+			// Turn these on and off
+			useStyles = true;
+			useVariants = true;
+			useWeights = true;
+
 			// Number of words to write
 			// This is currently random, between the bounds
 			var minSentenceLength = 1;
-			var maxSentenceLength = 5;
-			var sentenceLength = Math.floor(Math.random() * maxSentenceLength) + minSentenceLength;
+			var maxSentenceLength = 15;
+			var sentenceLength = Math.floor(Math.random() * (maxSentenceLength - minSentenceLength)) + minSentenceLength;
+
+			// Size of font
+			// This is currently random, between the bounds
+			var minFontSize = 10;
+			var maxFontSize = 50;
+			var fontSize = Math.floor(Math.random() * (maxFontSize - minFontSize)) + minFontSize;
 		</script>
 
 		<script>
@@ -68,9 +79,41 @@
 						text = text + words[index] + " ";
 					}
 
+					// Construct font style string
+					var fontString = fontSize + 'px "' + fontName + '"';
+
+					if (useStyles) {
+						var styles = ['italic', 'oblique', ''];
+						var style = styles[Math.floor(Math.random() * styles.length)];
+						if (style != '') {
+							style = style + ' ';
+						}
+						fontString = style + fontString;
+					}
+
+					if (useVariants) {
+						var variants = ['small-caps', ''];
+						var variant = variants[Math.floor(Math.random() * variants.length)];
+						if (variant != '') {
+							variant = variant + ' ';
+						}
+						fontString = variant + fontString;
+					}
+
+					if (useWeights) {
+						var weights = ['lighter', 'light', 'bold', 'bolder', ''];
+						var weight = weights[Math.floor(Math.random() * weights.length)];
+						if (weight != '') {
+							weight = weight + ' ';
+						}
+						fontString = weight + fontString;
+					}
+
+					console.log('Using font: ' + fontString);
+
 					// Draw to canvas
 					// Resizing if necessary
-					ctx.font = '10px "' + fontName + '"';
+					ctx.font = fontString;
 				    ctx.textBaseline = 'top';
 
 				    var width = ctx.measureText(text).width;
@@ -78,6 +121,8 @@
 						canvas.width = width + (0.05 * width);
 					}
 
+					// This has to be set again after measureText
+					ctx.font = fontString;
 					ctx.fillText(text, 0, 100);
 
 				    // Save image
