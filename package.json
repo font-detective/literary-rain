@@ -10,6 +10,7 @@
         "start": "node app.js"
     },
   "dependencies": {
-    "express": "~4.10.5"
+    "express": "~4.10.5",
+    "body-parser": "~1.14.1"
   }
 }

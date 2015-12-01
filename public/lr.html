@@ -118,7 +118,7 @@
 
 				    var width = ctx.measureText(text).width;
 					if(width > 100) {
-						canvas.width = width + (0.05 * width);
+						canvas.width = width;
 					}
 
 					// This has to be set again after measureText
@@ -131,7 +131,7 @@
 				    // Post to server
 				    $.ajax({
 						type: "POST",
-						url: "script.php", // TODO
+						url: "/upload",
 						data: { 
 							imgBase64: dataURL
 						}
