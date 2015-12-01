@@ -15,9 +15,11 @@
 			var fontUrl = 'https://fonts.googleapis.com/css?family=Open+Sans';
 
 			// Turn these on and off
-			useStyles = true;
-			useVariants = true;
-			useWeights = true;
+			var useStyles = true;
+			var useVariants = true;
+			var useWeights = true;
+			var useTranslatedBackgrounds = true;
+			var useRotatedBackgrounds = true;
 
 			// Number of words to write
 			// This is currently random, between the bounds
@@ -134,11 +136,24 @@
 						}
 
 						// Vary location
-						var x = Math.floor(Math.random() * (canvas.width - img.width));
-						var y = Math.floor(Math.random() * (canvas.height - img.height));;
+						if (useTranslatedBackgrounds) {
+							var x = Math.floor(Math.random() * (canvas.width - img.width));
+							var y = Math.floor(Math.random() * (canvas.height - img.height));
+						}
 
-						// Do it already!
-						ctx.drawImage(img, x, y);
+						// Draw the background image!
+						// ...and vary rotation, if required
+						if (useRotatedBackgrounds) {
+							ctx.save();
+							ctx.translate(x, y);
+							ctx.rotate(Math.random() * Math.PI * 2);
+							ctx.drawImage(img, 0, 0);
+							ctx.restore();
+						} else {
+							ctx.drawImage(img, x, y);
+						}
+
+						// Now, draw the text!
 						ctx.fillText(text, 0, 100);
 
 					    // Save image
