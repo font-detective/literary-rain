@@ -83,7 +83,8 @@
 					var fontString = fontSize + 'px "' + fontName + '"';
 
 					if (useStyles) {
-						var styles = ['italic', 'oblique', ''];
+						// 5x more likely to be normal
+						var styles = ['italic', 'oblique', '', '', '', '', ''];
 						var style = styles[Math.floor(Math.random() * styles.length)];
 						if (style != '') {
 							style = style + ' ';
@@ -92,7 +93,8 @@
 					}
 
 					if (useVariants) {
-						var variants = ['small-caps', ''];
+						// 5x more likely to be normal
+						var variants = ['small-caps', '', '', '', '', ''];
 						var variant = variants[Math.floor(Math.random() * variants.length)];
 						if (variant != '') {
 							variant = variant + ' ';
@@ -101,7 +103,8 @@
 					}
 
 					if (useWeights) {
-						var weights = ['lighter', 'light', 'bold', 'bolder', ''];
+						// 5x more likely to be normal
+						var weights = ['lighter', 'light', 'bold', 'bolder', '', '', '', '', ''];
 						var weight = weights[Math.floor(Math.random() * weights.length)];
 						if (weight != '') {
 							weight = weight + ' ';

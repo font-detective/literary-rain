@@ -1,5 +1,24 @@
 var express = require('express');
 var bodyParser = require('body-parser');
+var fs = require("fs");
+
+
+function writeFile(data, i) {
+	var i = i || 0;
+    var fileName = './output/out_' + i + '.png';
+    fs.exists(fileName, function (exists) {
+    	if (exists) {
+    		writeFile(data, ++i);
+    	} else {
+    		fs.writeFile(fileName, data, 'base64', function(err) {
+				if (err) {
+					console.error(err);	
+				}
+			});
+    	}
+    });
+};
+
 var app = express();
 
 app.use(express.static(__dirname + '/public'));
@@ -9,12 +28,7 @@ app.use(bodyParser.json());
 
 app.post('/upload', function (req, res) {
 	var base64Data = req.body.imgBase64.replace(/^data:image\/png;base64,/, "");
-
-	require("fs").writeFile("./output/out.png", base64Data, 'base64', function(err) {
-		if (err) {
-			console.error(err);	
-		}
-	});
+	writeFile(base64Data);
 })
 
 app.use(function (req, res) {
