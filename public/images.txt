@@ -1,3 +1,4 @@
+backgrounds/white.png
 backgrounds/0001.jpg
 backgrounds/0002.jpg
 backgrounds/0003.jpg
