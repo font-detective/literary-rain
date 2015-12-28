@@ -9,29 +9,51 @@
 
 		<!-- Configuration -->
 		<script>
+			// Retrieve GET variables
+			// https://css-tricks.com/snippets/javascript/get-url-variables/
+			// https://css-tricks.com/license/
+			function getQueryVariable (variable) {
+		       var query = window.location.search.substring(1);
+		       var vars = query.split("&");
+		       for (var i=0; i<vars.length; i++) {
+	               var pair = vars[i].split("=");
+	               if (pair[0] == variable) {return decodeURI(pair[1]);}
+		       }
+		       return false;
+			}
+
 			// URL of web font to use
 			// See https://www.google.com/fonts for a list
-			var fontName = 'Open Sans'
-			var fontUrl = 'https://fonts.googleapis.com/css?family=Open+Sans';
+			var fontName = getQueryVariable("font");
+			var fontUrl = getQueryVariable("url");
+
+			if (!fontName) {
+				fontName = 'Open Sans';
+				fontUrl = 'https://fonts.googleapis.com/css?family=Open+Sans';
+			}
 
 			// Turn these on and off
-			var useStyles = true;
-			var useVariants = true;
-			var useWeights = true;
-			var useTranslatedBackgrounds = true;
-			var useRotatedBackgrounds = true;
+			var useStyles = getQueryVariable("styles") || true;
+			var useVariants = getQueryVariable("variants") || false;
+			var useWeights = getQueryVariable("weights") || true;
+			var useBackgrounds = getQueryVariable("backgrounds") || false;
+			var useTranslatedBackgrounds = getQueryVariable("translated") || false;
+			var useRotatedBackgrounds = getQueryVariable("rotated") || false;
 
 			// Number of words to write
 			// This is currently random, between the bounds
-			var minSentenceLength = 1;
-			var maxSentenceLength = 15;
+			var minSentenceLength = getQueryVariable("minlength") || 1;
+			var maxSentenceLength = getQueryVariable("maxlength") || 5;
 			var sentenceLength = Math.floor(Math.random() * (maxSentenceLength - minSentenceLength)) + minSentenceLength;
 
 			// Size of font
 			// This is currently random, between the bounds
-			var minFontSize = 10;
-			var maxFontSize = 50;
+			var minFontSize = getQueryVariable("minsize") || 10;
+			var maxFontSize = getQueryVariable("maxsize") || 50;
 			var fontSize = Math.floor(Math.random() * (maxFontSize - minFontSize)) + minFontSize;
+
+			// Number of images left to generate
+			var n = getQueryVariable("i") || 1;
 		</script>
 
 		<script>
@@ -64,120 +86,144 @@
 			var canvas = document.getElementById('lrCanvas');
 			var ctx = canvas.getContext('2d');
 
-			var link = document.createElement('link');
-			link.rel = 'stylesheet';
-			link.type = 'text/css';
-			link.href = fontUrl;
-			document.getElementsByTagName('head')[0].appendChild(link);
+			// Do we need to load a web font?
+			if (fontUrl) {
+				var link = document.createElement('link');
+				link.rel = 'stylesheet';
+				link.type = 'text/css';
+				link.href = fontUrl;
+				document.getElementsByTagName('head')[0].appendChild(link);
+			}
+
+			function doDraw() {
+				readTextFile("words.txt", function(words) {
+					// Pick some words
+					var text = "";
+					for (i = 0; i < sentenceLength; i++) {
+						var index = Math.floor(Math.random() * words.length);
+						text = text + words[index] + " ";
+					}
+
+					// Construct font style string
+					var fontString = fontSize + 'px "' + fontName + '"';
+
+					if (useStyles) {
+						// 5x more likely to be normal
+						var styles = ['italic', 'oblique', '', '', '', '', ''];
+						var style = styles[Math.floor(Math.random() * styles.length)];
+						if (style != '') {
+							style = style + ' ';
+						}
+						fontString = style + fontString;
+					}
+
+					if (useVariants) {
+						// 5x more likely to be normal
+						var variants = ['small-caps', '', '', '', '', ''];
+						var variant = variants[Math.floor(Math.random() * variants.length)];
+						if (variant != '') {
+							variant = variant + ' ';
+						}
+						fontString = variant + fontString;
+					}
+
+					if (useWeights) {
+						// 5x more likely to be normal
+						var weights = ['bold', 'bolder', '', '', '', '', ''];
+						var weight = weights[Math.floor(Math.random() * weights.length)];
+						if (weight != '') {
+							weight = weight + ' ';
+						}
+						fontString = weight + fontString;
+					}
+
+					// Set colour
+					console.log(getAverageColourAsRGB(img));
+
+					console.log('Using font: ' + fontString);
+
+					// Draw to canvas
+					// Resizing if necessary
+					ctx.font = fontString;
+				    ctx.textBaseline = 'top';
+
+				    var width = ctx.measureText(text).width;
+					if(width > 100) {
+						canvas.width = width;
+						// This has to be set again after resize
+						ctx.font = fontString;
+					}
+
+					// Vary location
+					if (useTranslatedBackgrounds) {
+						var x = Math.floor(Math.random() * (canvas.width - img.width));
+						var y = Math.floor(Math.random() * (canvas.height - img.height));
+					}
+
+					// Draw the background image!
+					// ...and vary rotation, if required
+					if (useRotatedBackgrounds) {
+						ctx.save();
+						ctx.translate(x, y);
+						ctx.rotate(Math.random() * Math.PI * 2);
+						ctx.drawImage(img, 0, 0);
+						ctx.restore();
+					} else {
+						ctx.drawImage(img, x, y);
+					}
+
+					// Now, draw the text!
+					ctx.fillText(text, 0, 100);
+
+				    // Save image
+				    var dataURL = canvas.toDataURL();
+
+				    console.log(n);
+				    if (n > 1) {
+				    	var href = window.location.href.replace("i="+n, "i="+(n-1));
+				    	console.log(href);
+				    	setTimeout(function(){ location.href = href }, 1000);
+					}
+
+				    // Post to server
+				    $.ajax({
+						type: "POST",
+						url: "/upload/" + fontName,
+						data: { 
+							imgBase64: dataURL
+						}
+					}).done(function() {
+						console.log("done");
+						// Success!
+					});
+				});
+			}
 
 			// Wait for background image to load...
 			var img = new Image();
 			img.onload = function() {
 				// Trick from http://stackoverflow.com/questions/2635814/
 				var image = new Image;
-				image.src = link.href;
-				image.onerror = function() {
-					readTextFile("words.txt", function(words) {
-						// Pick some words
-						var text = "";
-						for (i = 0; i < sentenceLength; i++) {
-							var index = Math.floor(Math.random() * words.length);
-							text = text + words[index] + " ";
-						}
 
-						// Construct font style string
-						var fontString = fontSize + 'px "' + fontName + '"';
-
-						if (useStyles) {
-							// 5x more likely to be normal
-							var styles = ['italic', 'oblique', '', '', '', '', ''];
-							var style = styles[Math.floor(Math.random() * styles.length)];
-							if (style != '') {
-								style = style + ' ';
-							}
-							fontString = style + fontString;
-						}
-
-						if (useVariants) {
-							// 5x more likely to be normal
-							var variants = ['small-caps', '', '', '', '', ''];
-							var variant = variants[Math.floor(Math.random() * variants.length)];
-							if (variant != '') {
-								variant = variant + ' ';
-							}
-							fontString = variant + fontString;
-						}
-
-						if (useWeights) {
-							// 5x more likely to be normal
-							var weights = ['lighter', 'light', 'bold', 'bolder', '', '', '', '', ''];
-							var weight = weights[Math.floor(Math.random() * weights.length)];
-							if (weight != '') {
-								weight = weight + ' ';
-							}
-							fontString = weight + fontString;
-						}
-
-						// Set colour
-						console.log(getAverageColourAsRGB(img));
-
-						console.log('Using font: ' + fontString);
-
-						// Draw to canvas
-						// Resizing if necessary
-						ctx.font = fontString;
-					    ctx.textBaseline = 'top';
-
-					    var width = ctx.measureText(text).width;
-						if(width > 100) {
-							canvas.width = width;
-							// This has to be set again after resize
-							ctx.font = fontString;
-						}
-
-						// Vary location
-						if (useTranslatedBackgrounds) {
-							var x = Math.floor(Math.random() * (canvas.width - img.width));
-							var y = Math.floor(Math.random() * (canvas.height - img.height));
-						}
-
-						// Draw the background image!
-						// ...and vary rotation, if required
-						if (useRotatedBackgrounds) {
-							ctx.save();
-							ctx.translate(x, y);
-							ctx.rotate(Math.random() * Math.PI * 2);
-							ctx.drawImage(img, 0, 0);
-							ctx.restore();
-						} else {
-							ctx.drawImage(img, x, y);
-						}
-
-						// Now, draw the text!
-						ctx.fillText(text, 0, 100);
-
-					    // Save image
-					    var dataURL = canvas.toDataURL();
-
-					    // Post to server
-					    $.ajax({
-							type: "POST",
-							url: "/upload",
-							data: { 
-								imgBase64: dataURL
-							}
-						}).done(function(o) {
-							// Success! 
-						});
-					});
-				};
+				if (fontUrl) {
+					image.src = link.href;
+					image.onerror = function() {
+						doDraw();
+					};
+				} else {
+					doDraw();
+				}
 			};
 
 			// Set the background image source
-			readTextFile("images.txt", function(images) {
-				var index = Math.floor(Math.random() * images.length);
-				img.src = images[index];
-			});
+			if (useBackgrounds) {
+				readTextFile("images.txt", function(images) {
+					var index = Math.floor(Math.random() * images.length);
+					img.src = images[index];
+				});
+			} else {
+				img.src = "backgrounds/white.png";
+			}
 		</script>
 	</body>
 </html>

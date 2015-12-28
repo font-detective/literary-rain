@@ -2,13 +2,16 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var fs = require("fs");
 
+function getFilePath(font) {
+	return './output/' + font + '/';
+}
 
-function writeFile(data, i) {
+function writeFileSequential(font, data, i) {
 	var i = i || 0;
-    var fileName = './output/out_' + i + '.png';
+    var fileName = getFilePath(font) + 'out_' + i + '.png';
     fs.exists(fileName, function (exists) {
     	if (exists) {
-    		writeFile(data, ++i);
+    		writeFileSequential(font, data, ++i);
     	} else {
     		fs.writeFile(fileName, data, 'base64', function(err) {
 				if (err) {
@@ -19,6 +22,17 @@ function writeFile(data, i) {
     });
 };
 
+function writeFileRandom(font, data) {
+	// Space for 1m files
+	var i = Math.floor(Math.random() * 999999);
+	var fileName = getFilePath(font) + 'out_' + i + '.png';
+	fs.writeFile(fileName, data, 'base64', function(err) {
+		if (err) {
+			console.error(err);	
+		}
+	});
+}
+
 var app = express();
 
 app.use(express.static(__dirname + '/public'));
@@ -26,9 +40,10 @@ app.use(express.static(__dirname + '/public'));
 app.use(bodyParser.urlencoded({ extended: false, limit: '50mb'}));
 app.use(bodyParser.json({limit: '50mb'}));
 
-app.post('/upload', function (req, res) {
+app.post('/upload/:font', function (req, res) {
+	var font = req.params.font;
 	var base64Data = req.body.imgBase64.replace(/^data:image\/png;base64,/, "");
-	writeFile(base64Data);
+	writeFileRandom(font, base64Data);
 })
 
 app.use(function (req, res) {
