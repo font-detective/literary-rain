@@ -6,6 +6,16 @@ function getFilePath(font) {
 	return './output/' + font + '/';
 }
 
+function makeFileDir(font, callback) {
+	var path = getFilePath(font);
+	fs.exists(path, function (exists) {
+		if (!exists) {
+			fs.mkdirSync(path);
+		}
+		callback();
+	});
+}
+
 function writeFileSequential(font, data, i) {
 	var i = i || 0;
     var fileName = getFilePath(font) + 'out_' + i + '.png';
@@ -13,11 +23,13 @@ function writeFileSequential(font, data, i) {
     	if (exists) {
     		writeFileSequential(font, data, ++i);
     	} else {
-    		fs.writeFile(fileName, data, 'base64', function(err) {
-				if (err) {
-					console.error(err);	
-				}
-			});
+    		makeFileDir(font, function() {
+	    		fs.writeFile(fileName, data, 'base64', function(err) {
+					if (err) {
+						console.error(err);	
+					}
+				});
+    		});
     	}
     });
 };
@@ -26,10 +38,12 @@ function writeFileRandom(font, data) {
 	// Space for 1m files
 	var i = Math.floor(Math.random() * 999999);
 	var fileName = getFilePath(font) + 'out_' + i + '.png';
-	fs.writeFile(fileName, data, 'base64', function(err) {
-		if (err) {
-			console.error(err);	
-		}
+	makeFileDir(font, function() {
+		fs.writeFile(fileName, data, 'base64', function(err) {
+			if (err) {
+				console.error(err);	
+			}
+		});
 	});
 }
 

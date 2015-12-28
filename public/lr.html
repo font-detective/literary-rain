@@ -27,6 +27,12 @@
 			var fontName = getQueryVariable("font");
 			var fontUrl = getQueryVariable("url");
 
+			// Assume Google fonts
+			if (fontUrl && !fontUrl.includes("http")) {
+				fontUrl = "https://fonts.googleapis.com/css?family=" + fontUrl;
+			}
+
+			// Check for set
 			if (!fontName) {
 				fontName = 'Open Sans';
 				fontUrl = 'https://fonts.googleapis.com/css?family=Open+Sans';
@@ -109,7 +115,7 @@
 
 					if (useStyles) {
 						// 5x more likely to be normal
-						var styles = ['italic', 'oblique', '', '', '', '', ''];
+						var styles = ['italic', '', '', '', '', ''];
 						var style = styles[Math.floor(Math.random() * styles.length)];
 						if (style != '') {
 							style = style + ' ';
